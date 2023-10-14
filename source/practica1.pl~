@@ -5,8 +5,9 @@
 
 % Este es como el metodo main()
 inicializar():-
-    turno=blanco,
+    retract(turno(_)),
     retractall(tablero(_)),
+    assert(turno(blanco)),
     Tablero=[
         [torre, caballo, arfil, rey, reina, arfil, caballo, torre],
         [peon, peon, peon, peon, peon, peon, peon, peon],
@@ -18,7 +19,32 @@ inicializar():-
         [torre, caballo, arfil, reina, rey, arfil, caballo, torre]
     ],
     assert(tablero(Tablero)),
-    printTablero(Tablero).
+    printTablero(Tablero),
+    jugar(tablero(Tablero)).
+
+jugar(Tablero):-
+    printTablero(Tablero),
+    write("ESCRIBA LA COLUMNA DE LA PIEZA QUE QUIERE MOVER"),
+    nl,
+    read(_X),
+    nl,
+    write("ESCRIBA LA FILA DE LA PIEZA QUE QUIERE MOVER"),
+    nl,
+    read(_Y),
+    nl,
+    % buscarPieza(X, Y, Pieza, Color),
+    write("ESCRIBA LA COLUMNA A LA QUE QUIERE MOVER LA PIEZA"),
+    nl,
+    read(_W),
+    nl,
+    write("ESCRIBA LA FILA A LA QUE QUIERE MOVER LA PIEZA"),
+    nl,
+    read(_Z),
+    nl,
+   % moverPieza(Tablero, Pieza, Color, X, Y, W, Z),
+    retract(turno(_)),
+    assert(turno(negro)),
+    jugar(Tablero).
 
 printTablero([]).
 printTablero([X|R]):-
@@ -33,46 +59,56 @@ printLinea([X|R]):-
     printLinea(R).
 
 % Comprobar que se puede mover esa ficha a esa posición.
-moverPieza(Pieza, Color, F, C, NF, NC):-
+moverPieza(Tablero, Pieza, Color, F, C, NF, NC):-
     color(Color),
     turno==Color,
     fila(F), columna(C), fila(NF), columna(NC),
-    mover(Pieza, Color, F, C, NF, NC),
-    cambiarFicha(Pieza, Color, F, C, NF, NC).
+    mover(Pieza, F, C, NF, NC),
+    cambiarFicha(tablero(Tablero),Pieza, Color, F, C, NF, NC).
+
+% cambiarFichar(Tablero, Pieza, Color, F, C, NF, NC):-
 
 % Mover en Horizontal
-mover(Pieza, Color, F, C, F, NC):-
-    % tipopieza(Pieza, Color),
+mover(Pieza, F, C, F, NC):-
     recto(Pieza),
-%    color(Color),
-%    fila(F), columna(C), columna(NC),
     C \= NC.
 
 % Mover en Vertical
-mover(Pieza, Color,F, C, NF, C):-
-%    tipopieza(Pieza, Color),
+mover(Pieza,F, C, NF, C):-
     recto(Pieza),
-%    color(Color),
-%    fila(F), columna(C), fila(NF),
     F \= NF.
 
 % Mover en diagonal
-mover(Pieza, Color,F, C, NF, NC):-
- %   tipopieza(Pieza, Color),
+mover(Pieza,F, C, NF, NC):-
     diagonal(Pieza),
-%    color(Color),
-%    fila(F), columna(C), fila(NF), columna(NC),
     numero(C,X), numero(NC, Y),
     abs(X-Y) =:= abs(F-NF).
 
-mover(Pieza, Color, F, C, NF, NC):-
-%    tipopieza(Pieza, Color),
+mover(Pieza, F, C, NF, NC):-
     enL(Pieza),
-%    color(Color),
-%    fila(F), columna(C), fila(NF), columna(NC),
     numero(C,X), numero(NC, Y),
     ((abs(X-Y) =:= 2, abs(F-NF) =:= 1);
      (abs(X-Y) =:= 1, abs(F-NF) =:= 2)).
+
+% Mover el rey
+mover(Pieza, F, C, NF, NC):-
+    rey(Pieza),
+    numero(C,X), numero(NC, Y),
+    casillaContinua(F, X, NF, Y).
+
+% Mover el peón hacia delante
+mover(Pieza,F,C,NF, C):-
+    peon(Pieza),
+    NF=:=F+1.
+
+% Comer con el peón
+mover(Pieza, F, C, NF, NC):-
+    peon(Pieza),
+%    hayPieza(NF, NC, Z),
+    numero(C,X), numero(NC, Y),
+    NF=:=F+1,
+    abs(X-Y)=:=1.
+
 
 casillaContinua(F, C, NF, C):-
     abs(F-NF)=:=1.
@@ -83,34 +119,6 @@ casillaContinua(F, C, NF, NC):-
 casillaContinua(F, C, F, NC):-
     abs(C-NC)=:=1.
 
-% Mover el rey
-mover(Pieza, Color, F, C, NF, NC):-
-%    tipopieza(Pieza, Color),
-    rey(Pieza),
-%    color(Color),
-%    fila(F), columna(C), fila(NF), columna(NC),
-    numero(C,X), numero(NC, Y),
-    casillaContinua(F, X, NF, Y).
-
-% Mover el peón hacia delante
-mover(Pieza, Color,F,C,NF, C):-
- %   tipopieza(Pieza, Color),
-    peon(Pieza),
-%    color(Color),
-%    fila(F), columna(C), fila(NF),
-    NF=:=F+1.
-
-% Comer con el peón
-mover(Pieza, Color, F, C, NF, NC):-
-    % tipopieza(Pieza, Color),
-    peon(Pieza),
-%    color(Color),
-    hayPieza(NF, NC, Z),
-%    comerPieza(Color, Z),
-%    fila(F), columna(C), fila(NF),columna(NC),
-    numero(C,X), numero(NC, Y),
-    NF=:=F+1,
-    abs(X-Y)=:=1.
 
 %Facts:
 
@@ -147,7 +155,6 @@ tipopieza(arfil, negro).
 tipopieza(caballo, negro).
 tipopieza(peon, negro).
 tipopieza(rey, negro).
-
 tipopieza(torre, blanco).
 tipopieza(reina, blanco).
 tipopieza(arfil, blanco).
