@@ -43,7 +43,7 @@ mover(Pieza,F,C,NF, C):-
 % Comer con el peón
 mover(Pieza, F, C, NF, NC):-
     peon(Pieza),
-    hayPieza(NC, NF),
+    hayPieza(NF, NC),
     numero(C,X), numero(NC, Y),
     NF=:=F+1,
     abs(X-Y)=:=1.
