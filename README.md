@@ -41,4 +41,8 @@
       * **2 Caballos**.
       * **1 Rey**.
       * **8 Peones**.
+
+3. Diagrama Entidad Relación:
+   
+    ![entidadRelacion](https://github.com/carlosMoragon/practica1_IA/blob/main/IMG_0183.jpeg)
           
